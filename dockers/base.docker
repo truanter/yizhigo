@@ -1,0 +1,10 @@
+FROM golang:1.16 as builder
+WORKDIR /yizhigo
+COPY . ./
+RUN go mod download
+RUN go build -o yizhigo .
+
+FROM golang:1.16
+WORKDIR /yizhigo
+COPY --from=builder /yizhigo/yizhigo /yizhigo
+ENTRYPOINT [ "./yizhigo" ]
