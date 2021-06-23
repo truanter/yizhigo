@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strconv"
+)
 
 func GetDefaultEnv(key, defaultStr string) (value string) {
 	value = os.Getenv(key)
@@ -12,4 +15,15 @@ func GetDefaultEnv(key, defaultStr string) (value string) {
 
 func IsProdEnv() bool {
 	return GetDefaultEnv("IN_DOCKER", "0") != "0"
+}
+
+func GetTbkAuthInfo() (appKey, secret string) {
+	appKey = os.Getenv("AppKey")
+	secret = os.Getenv("Secret")
+	return
+}
+
+func GetAdzoneID() int64 {
+	v, _ := strconv.ParseInt(os.Getenv("AdzoneID"), 10, 64)
+	return v
 }
