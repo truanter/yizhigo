@@ -1,4 +1,4 @@
-package controller
+package goods
 
 import (
 	"github.com/truanter/top-go/pkg/config"

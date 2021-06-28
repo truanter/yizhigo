@@ -1,123 +1,85 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/truanter/top-go/pkg/model"
-	"github.com/truanter/yizhigo/config"
 	"github.com/truanter/yizhigo/http/app/error_code"
 	"github.com/truanter/yizhigo/http/app/response"
+	impl "github.com/truanter/yizhigo/internal/goods"
 	"github.com/truanter/yizhigo/model/goods"
+	"github.com/truanter/yizhigo/pkg/common"
 	"strconv"
-	"strings"
 )
+
+func GetIndex(ctx *gin.Context) {
+	pageSizeStr := ctx.Request.URL.Query().Get("page_size")
+	pageNOStr := ctx.Request.URL.Query().Get("page_no")
+	res, err := impl.GetGuessYouLike(pageSizeStr, pageNOStr)
+	if common.IsRuntimeError(err) {
+		response.Error(ctx, error_code.InternalError, err.Error())
+		return
+	}
+	favorites := make([]goods.Favorites, 0)
+	if pageNOStr == "" || pageNOStr == "1" {
+		favorites = impl.GetMySpecialFavorites()
+	}
+	res["favorites"] = favorites
+	response.SuccessWithData(ctx, res)
+	return
+}
 
 func Search(ctx *gin.Context) {
 
 	q := ctx.Request.URL.Query().Get("q")
 	pageSizeStr := ctx.Request.URL.Query().Get("page_size")
 	pageNOStr := ctx.Request.URL.Query().Get("page_no")
-	pageSize := 20
-	pageNO := 1
-
-	if pageSizeStr != "" {
-		pageSize, _ = strconv.Atoi(pageSizeStr)
-	}
-
-	if pageNOStr != "" {
-		pageNO, _ = strconv.Atoi(pageNOStr)
-	}
-
-	resp, err := top.TbkDgMaterialOptional().Do(model.TbkDgMaterialOptionalRequest{
-		PageSize:  int64(pageSize),
-		PageNO:    int64(pageNO),
-		AdzoneID:  config.GetAdzoneID(),
-		Q:         q,
-		HasCoupon: true,
-	})
-	if err != nil {
-		response.Error(ctx, error_code.TbkRequestError, err.Error())
+	res, err := impl.Search(q, pageSizeStr, pageNOStr)
+	if common.IsRuntimeError(err) {
+		response.Error(ctx, error_code.InternalError, err.Error())
 		return
-	}
-	if resp.ErrorResponse.Code != 0 {
-		response.Error(ctx, error_code.TbkRequestError, fmt.Sprintf("code: %d, sub_code: %s, msg: %s, sub_msg: %s", resp.ErrorResponse.Code, resp.ErrorResponse.SubCode, resp.ErrorResponse.Msg, resp.ErrorResponse.SubMsg))
-		return
-	}
-	goodsList := make([]map[string]interface{}, 0)
-	for _, v := range resp.ResultList {
-		goodsList = append(goodsList, goods.Parse(v))
-	}
-	res := map[string]interface{}{
-		"list":            goodsList,
-		"total":           resp.TotalResults,
-		"page_result_key": resp.PageResultKey,
 	}
 	response.SuccessWithData(ctx, res)
-	return
 }
 
 func GetFavorites(ctx *gin.Context) {
-	MaterialID := int64(31519)
-	resp, err := top.TbkDgOptimusMaterial().Do(model.TbkDgOptimusMaterialRequest{
-		PageSize:   100,
-		AdzoneID:   config.GetAdzoneID(),
-		MaterialID: MaterialID,
-	})
-	if err != nil {
-		response.Error(ctx, error_code.TbkRequestError, err.Error())
-		return
+	resp, err := impl.GetAllMyFavorites()
+	if common.IsRuntimeError(err) {
+		response.Error(ctx, error_code.InternalError, err.Error())
 	}
-	if resp.ErrorResponse.Code != 0 {
-		response.Error(ctx, error_code.TbkRequestError, fmt.Sprintf("code: %d, sub_code: %s, msg: %s, sub_msg: %s", resp.ErrorResponse.Code, resp.ErrorResponse.SubCode, resp.ErrorResponse.Msg, resp.ErrorResponse.SubMsg))
-		return
-	}
-	response.SuccessWithData(ctx, resp.ResultList)
+	response.SuccessWithData(ctx, resp)
 	return
 }
 
+func GetFavoritesLocal(ctx *gin.Context) {
+	response.SuccessWithData(ctx, impl.GetMySpecialFavorites())
+}
+
 func GetFavoriteList(ctx *gin.Context) {
-	MaterialID := int64(31539)
 	FavoritesID := ctx.Request.URL.Query().Get("category_id")
 	pageSizeStr := ctx.Request.URL.Query().Get("page_size")
 	pageNOStr := ctx.Request.URL.Query().Get("page_no")
-	pageSize := 20
-	pageNO := 1
-
-	if pageSizeStr != "" {
-		pageSize, _ = strconv.Atoi(pageSizeStr)
-	}
-
-	if pageNOStr != "" {
-		pageNO, _ = strconv.Atoi(pageNOStr)
-	}
-
-	resp, err := top.TbkDgOptimusMaterial().Do(model.TbkDgOptimusMaterialRequest{
-		PageSize:    int64(pageSize),
-		PageNO:      int64(pageNO),
-		AdzoneID:    config.GetAdzoneID(),
-		MaterialID:  MaterialID,
-		FavoritesID: FavoritesID,
-	})
-	if err != nil {
-		response.Error(ctx, error_code.TbkRequestError, err.Error())
+	res, err := impl.GetFavoriteList(FavoritesID, pageSizeStr, pageNOStr)
+	if common.IsRuntimeError(err) {
+		response.Error(ctx, error_code.InternalError, err.Error())
 		return
-	}
-	if resp.ErrorResponse.Code != 0 {
-		response.Error(ctx, error_code.TbkRequestError, fmt.Sprintf("code: %d, sub_code: %s, msg: %s, sub_msg: %s", resp.ErrorResponse.Code, resp.ErrorResponse.SubCode, resp.ErrorResponse.Msg, resp.ErrorResponse.SubMsg))
-		return
-	}
-
-	goodsList := make([]map[string]interface{}, 0)
-	for _, v := range resp.ResultList {
-		goodsList = append(goodsList, goods.Parse(v))
-	}
-	res := map[string]interface{}{
-		"list":       goodsList,
-		"total":      resp.TotalCount,
-		"is_default": resp.IsDefault,
 	}
 	response.SuccessWithData(ctx, res)
-	return
+}
+
+func GetSimilarGoods(ctx *gin.Context) {
+	itemIDStr := ctx.Request.URL.Query().Get("item_id")
+	itemID, err := strconv.ParseInt(itemIDStr, 10, 64)
+	pageSizeStr := ctx.Request.URL.Query().Get("page_size")
+	pageNOStr := ctx.Request.URL.Query().Get("page_no")
+	if err != nil {
+		response.Error(ctx, error_code.InputError, err.Error())
+		return
+	}
+	res, err := impl.GetSimilarGoods(itemID, pageSizeStr, pageNOStr)
+	if common.IsRuntimeError(err) {
+		response.Error(ctx, error_code.InternalError, err.Error())
+		return
+	}
+	response.SuccessWithData(ctx, res)
 }
 
 func CreateTPWD(ctx *gin.Context) {
@@ -129,25 +91,11 @@ func CreateTPWD(ctx *gin.Context) {
 	}
 	url := data["url"]
 
-	if !strings.HasPrefix(url, "http") {
-		if strings.HasPrefix(url, "//") {
-			url = "https:" + url
-		} else if strings.HasPrefix(url, "/") {
-			url = "https:/" + url
-		} else {
-			url = "https://" + url
-		}
-	}
+	resp, err := impl.CreateTPWD(url)
 
-	resp, err := top.TbkTpwdCreate().Do(model.TbkTpwdCreateRequest{Url: url})
 	if err != nil {
 		response.Error(ctx, error_code.TbkRequestError, err.Error())
 		return
 	}
-	if resp.ErrorResponse.Code != 0 {
-		response.Error(ctx, error_code.TbkRequestError, fmt.Sprintf("code: %d, sub_code: %s, msg: %s, sub_msg: %s", resp.ErrorResponse.Code, resp.ErrorResponse.SubCode, resp.ErrorResponse.Msg, resp.ErrorResponse.SubMsg))
-		return
-	}
-	response.SuccessWithData(ctx, resp.Data)
-	return
+	response.SuccessWithData(ctx, resp)
 }

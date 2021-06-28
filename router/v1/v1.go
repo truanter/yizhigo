@@ -14,9 +14,12 @@ func RegisterV1(router *gin.Engine) {
 			name := ctx.DefaultQuery("name", "yizhigo")
 			ctx.String(http.StatusOK, fmt.Sprintf("hello, %s", name))
 		})
+		goV1.GET("/index", controller.GetIndex)
 		goV1.GET("/q", controller.Search)
-		goV1.GET("/favorites", controller.GetFavorites)
+		goV1.GET("/favorites", controller.GetFavoritesLocal)
+		goV1.GET("/favorites_all", controller.GetFavorites)
 		goV1.GET("/favorite_list", controller.GetFavoriteList)
+		goV1.GET("/similar", controller.GetSimilarGoods)
 		goV1.POST("/create_tpwd", controller.CreateTPWD)
 	}
 }
