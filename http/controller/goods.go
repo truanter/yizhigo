@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	conf "github.com/truanter/yizhigo/config"
 	"github.com/truanter/yizhigo/http/app/error_code"
 	"github.com/truanter/yizhigo/http/app/response"
 	impl "github.com/truanter/yizhigo/internal/goods"
@@ -9,6 +10,10 @@ import (
 	"github.com/truanter/yizhigo/pkg/common"
 	"strconv"
 )
+
+func GetConfig(ctx *gin.Context) {
+	response.SuccessWithData(ctx, conf.GetRuntimeConfig())
+}
 
 func GetIndex(ctx *gin.Context) {
 	pageSizeStr := ctx.Request.URL.Query().Get("page_size")
@@ -32,7 +37,8 @@ func Search(ctx *gin.Context) {
 	q := ctx.Request.URL.Query().Get("q")
 	pageSizeStr := ctx.Request.URL.Query().Get("page_size")
 	pageNOStr := ctx.Request.URL.Query().Get("page_no")
-	res, err := impl.Search(q, pageSizeStr, pageNOStr)
+	isBlock := ctx.Request.URL.Query().Get("is_block")
+	res, err := impl.Search(q, pageSizeStr, pageNOStr, isBlock)
 	if common.IsRuntimeError(err) {
 		response.Error(ctx, error_code.InternalError, err.Error())
 		return

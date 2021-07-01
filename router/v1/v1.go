@@ -14,6 +14,7 @@ func RegisterV1(router *gin.Engine) {
 			name := ctx.DefaultQuery("name", "yizhigo")
 			ctx.String(http.StatusOK, fmt.Sprintf("hello, %s", name))
 		})
+		goV1.GET("/config", controller.GetConfig)
 		goV1.GET("/index", controller.GetIndex)
 		goV1.GET("/q", controller.Search)
 		goV1.GET("/favorites", controller.GetFavoritesLocal)

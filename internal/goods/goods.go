@@ -9,7 +9,15 @@ import (
 	"strings"
 )
 
-func Search(q, pageSizeStr, pageNOStr string) (map[string]interface{}, error) {
+func Search(q, pageSizeStr, pageNOStr, isBlock string) (map[string]interface{}, error) {
+	if checkIsBlock(q, isBlock) {
+		return map[string]interface{}{
+			"list":            make([]map[string]interface{}, 0),
+			"total":           0,
+			"page_result_key": "",
+			"is_block":        true,
+		}, nil
+	}
 	pageSize := 20
 	pageNO := 1
 
@@ -40,12 +48,25 @@ func Search(q, pageSizeStr, pageNOStr string) (map[string]interface{}, error) {
 		"list":            goodsList,
 		"total":           resp.TotalResults,
 		"page_result_key": resp.PageResultKey,
+		"is_block":        false,
 	}
 
 	if resp.ErrorResponse.Code != 0 {
 		return res, common.NewTbkError(resp.ErrorResponse.Code, resp.ErrorResponse.SubCode, resp.ErrorResponse.Msg, resp.ErrorResponse.SubMsg, resp.ErrorResponse.RequestID)
 	}
 	return res, nil
+}
+
+func checkIsBlock(q, isBlockStr string) bool {
+	isBlock, _ := strconv.Atoi(isBlockStr)
+	if isBlock == 1 {
+		for _, v := range config.GetVirtualProductKeyWords() {
+			if strings.Contains(q, v) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func GetMySpecialFavorites() []goods.Favorites {
