@@ -27,3 +27,7 @@ func GetAdzoneID() int64 {
 	v, _ := strconv.ParseInt(os.Getenv("AdzoneID"), 10, 64)
 	return v
 }
+
+func GetAuthToken() string {
+	return os.Getenv("AuthToken")
+}
