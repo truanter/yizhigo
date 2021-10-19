@@ -7,6 +7,7 @@ const (
 
 	InputError      = 1001
 	TbkRequestError = 4000
+	PddRequestError = 4001
 )
 
 var errMsg = map[int]string{
@@ -16,6 +17,7 @@ var errMsg = map[int]string{
 
 	InputError:      "请求参数错误。",
 	TbkRequestError: "请求淘宝客出错。",
+	PddRequestError: "请求拼多多出错",
 }
 
 func GetErrorMsg(code int, extra_msg string) string {

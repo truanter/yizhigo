@@ -28,6 +28,16 @@ func GetAdzoneID() int64 {
 	return v
 }
 
+func GetPddAuthInfo() (clientID, secret string) {
+	clientID = os.Getenv("PddClientID")
+	secret = os.Getenv("PddSecret")
+	return
+}
+
+func GetPddPID() string {
+	return "13449638_213518026"
+}
+
 func GetAuthToken() string {
 	return os.Getenv("AuthToken")
 }

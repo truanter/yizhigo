@@ -51,3 +51,27 @@ func IsTbkError(err error) bool {
 	_, ok := err.(*tbkError)
 	return ok
 }
+
+type pddRequestError struct {
+	msg       string
+	subMsg    string
+	subCode   string
+	code      int
+	requestID string
+}
+
+func (p *pddRequestError) Error() string {
+	return fmt.Sprintf("code: %d, sub_code: %s, msg: %s, sub_msg: %s, request_id: %s", p.code, p.subCode, p.msg, p.subMsg, p.requestID)
+}
+
+func NewPddRequestError(code int, subCode, msg, subMsg, requestID string) error {
+	p := pddRequestError{
+		code:      code,
+		msg:       msg,
+		subCode:   subCode,
+		subMsg:    subMsg,
+		requestID: requestID,
+	}
+	log.Logger.Errorf("Pdd error: %s", p.Error())
+	return &p
+}
