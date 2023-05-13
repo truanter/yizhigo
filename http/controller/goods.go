@@ -8,7 +8,6 @@ import (
 	impl "github.com/truanter/yizhigo/internal/goods"
 	"github.com/truanter/yizhigo/model/goods"
 	"github.com/truanter/yizhigo/pkg/common"
-	"strconv"
 )
 
 func GetConfig(ctx *gin.Context) {
@@ -72,14 +71,10 @@ func GetFavoriteList(ctx *gin.Context) {
 }
 
 func GetSimilarGoods(ctx *gin.Context) {
-	itemIDStr := ctx.Request.URL.Query().Get("item_id")
-	itemID, err := strconv.ParseInt(itemIDStr, 10, 64)
+	itemID := ctx.Request.URL.Query().Get("item_id")
+	// itemID, err := strconv.ParseInt(itemIDStr, 10, 64)
 	pageSizeStr := ctx.Request.URL.Query().Get("page_size")
 	pageNOStr := ctx.Request.URL.Query().Get("page_no")
-	if err != nil {
-		response.Error(ctx, error_code.InputError, err.Error())
-		return
-	}
 	res, err := impl.GetSimilarGoods(itemID, pageSizeStr, pageNOStr)
 	if common.IsRuntimeError(err) {
 		response.Error(ctx, error_code.InternalError, err.Error())

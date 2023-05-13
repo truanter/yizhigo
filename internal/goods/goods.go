@@ -105,15 +105,15 @@ func GetAllMyFavorites() ([]map[string]interface{}, error) {
 
 func GetFavoriteList(favoriteID, pageSizeStr, pageNOStr string) (map[string]interface{}, error) {
 	materialID := config.MaterialIDGetFavoritesList
-	return generalTbkGoodsList(materialID, favoriteID, pageSizeStr, pageNOStr, 0)
+	return generalTbkGoodsList(materialID, favoriteID, pageSizeStr, pageNOStr, "")
 }
 
 func GetGuessYouLike(pageSizeStr, pageNOStr string) (map[string]interface{}, error) {
 	materialID := config.MaterialIDGuessYouLike
-	return generalTbkGoodsList(materialID, "", pageSizeStr, pageNOStr, 0)
+	return generalTbkGoodsList(materialID, "", pageSizeStr, pageNOStr, "")
 }
 
-func GetSimilarGoods(itemID int64, pageSizeStr, pageNOStr string) (map[string]interface{}, error) {
+func GetSimilarGoods(itemID, pageSizeStr, pageNOStr string) (map[string]interface{}, error) {
 	materialID := config.MaterialIDGetSimilarGoods
 	return generalTbkGoodsList(materialID, "", pageSizeStr, pageNOStr, itemID)
 }
@@ -139,7 +139,7 @@ func CreateTPWD(url string) (map[string]interface{}, error) {
 	return resp.Data, nil
 }
 
-func generalTbkGoodsList(materialID int64, favoritesID, pageSizeStr, pageNOStr string, itemID int64) (map[string]interface{}, error) {
+func generalTbkGoodsList(materialID int64, favoritesID, pageSizeStr, pageNOStr, itemID string) (map[string]interface{}, error) {
 	pageSize := 20
 	pageNO := 1
 

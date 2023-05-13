@@ -1,6 +1,7 @@
 FROM golang:1.16 as builder
 WORKDIR /yizhigo
 COPY . ./
+RUN go env -w GOPROXY=https://goproxy.cn,direct
 RUN go mod download
 RUN go build -o yizhigo .
 
